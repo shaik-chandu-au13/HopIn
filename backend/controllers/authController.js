@@ -6,12 +6,16 @@ const sendToken = require('../utils/jwtToken');
 const sendEmail = require('../utils/sendEmail');
 
 const crypto = require('crypto');
-
+const cloudinary = require('cloudinary');
 
 // Register a user   => /api/v1/register
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 
-    
+    const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+        folder: 'avatars',
+        width: 150,
+        crop: "scale"
+    })
 
     const { name, email, password } = req.body;
 
@@ -20,13 +24,13 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
         email,
         password,
         avatar: {
-            public_id:" result.public_id",
-            url: "result.secure_url"
+            public_id: result.public_id,
+            url: result.secure_url
         }
     })
 
     sendToken(user, 200, res)
-    // res.status(201).json({success:true, user})
+
 })
 
 // Login User  =>  /a[i/v1/login
@@ -53,7 +57,6 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
     }
 
     sendToken(user, 200, res)
-        res.status(201).json({success:true, user})
 })
 
 // Forgot Password   =>  /api/v1/password/forgot
@@ -79,7 +82,7 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
         await sendEmail({
             email: user.email,
-            subject: 'HopIn Password Recovery',
+            subject: 'ShopIT Password Recovery',
             message
         })
 
@@ -160,31 +163,31 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
 })
 
 
-// // Update user profile   =>   /api/v1/me/update
+// Update user profile   =>   /api/v1/me/update
 exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     const newUserData = {
         name: req.body.name,
         email: req.body.email
     }
 
-//     // Update avatar
-//     if (req.body.avatar !== '') {
-//         const user = await User.findById(req.user.id)
+    // Update avatar
+    if (req.body.avatar !== '') {
+        const user = await User.findById(req.user.id)
 
-//         const image_id = user.avatar.public_id;
-//         const res = await cloudinary.v2.uploader.destroy(image_id);
+        const image_id = user.avatar.public_id;
+        const res = await cloudinary.v2.uploader.destroy(image_id);
 
-//         const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
-//             folder: 'avatars',
-//             width: 150,
-//             crop: "scale"
-//         })
+        const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+            folder: 'avatars',
+            width: 150,
+            crop: "scale"
+        })
 
-//         newUserData.avatar = {
-//             public_id: result.public_id,
-//             url: result.secure_url
-//         }
-//     }
+        newUserData.avatar = {
+            public_id: result.public_id,
+            url: result.secure_url
+        }
+    }
 
     const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
         new: true,
@@ -211,9 +214,9 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
     })
 })
 
-// // Admin Routes
+// Admin Routes
 
-// // Get all users   =>   /api/v1/admin/users
+// Get all users   =>   /api/v1/admin/users
 exports.allUsers = catchAsyncErrors(async (req, res, next) => {
     const users = await User.find();
 
@@ -224,7 +227,7 @@ exports.allUsers = catchAsyncErrors(async (req, res, next) => {
 })
 
 
-// // Get user details   =>   /api/v1/admin/user/:id
+// Get user details   =>   /api/v1/admin/user/:id
 exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
     const user = await User.findById(req.params.id);
 
@@ -238,7 +241,7 @@ exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
     })
 })
 
-// // Update user profile   =>   /api/v1/admin/user/:id
+// Update user profile   =>   /api/v1/admin/user/:id
 exports.updateUser = catchAsyncErrors(async (req, res, next) => {
     const newUserData = {
         name: req.body.name,
@@ -257,7 +260,7 @@ exports.updateUser = catchAsyncErrors(async (req, res, next) => {
     })
 })
 
-// // Delete user   =>   /api/v1/admin/user/:id
+// Delete user   =>   /api/v1/admin/user/:id
 exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
     const user = await User.findById(req.params.id);
 
