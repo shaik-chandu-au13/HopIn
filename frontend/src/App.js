@@ -67,6 +67,9 @@ function App() {
   }, [])
 
   const { user, isAuthenticated, loading } = useSelector(state => state.auth)
+  let link = `https://mypoche.herokuapp.com/api/v1/products`
+
+  fetch (link).then(d=>d.json()).then(d=>{console.log(d)}).catch(e=>{console.log(e.message)})
 
   return (
     <Router>
